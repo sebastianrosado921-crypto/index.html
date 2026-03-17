@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>BarrioConecta</title>
+
+<style>
+body{
+font-family:Arial;
+background:#f2f2f2;
+margin:0;
+}
+
+header{
+background:#1976d2;
+color:white;
+padding:15px;
+text-align:center;
+}
+
+.container{
+padding:20px;
+max-width:700px;
+margin:auto;
+}
+
+input{
+width:100%;
+padding:10px;
+margin:5px 0;
+}
+
+button{
+padding:10px;
+background:#1976d2;
+color:white;
+border:none;
+border-radius:5px;
+margin-top:5px;
+cursor:pointer;
+}
+
+.post{
+background:white;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+}
+
+.chat{
+background:white;
+padding:10px;
+margin-top:10px;
+border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>BarrioConecta</h1>
+<p>Ayuda entre vecinos</p>
+</header>
+
+<div class="container">
+
+<div id="login">
+
+<h2>Crear cuenta</h2>
+
+<input id="nombre" placeholder="Nombre">
+<input id="barrio" placeholder="Barrio">
+<input id="direccion" placeholder="Dirección aproximada">
+<input id="email" placeholder="Correo">
+<input id="password" type="password" placeholder="Contraseña">
+
+<button onclick="registrar()">Registrarse</button>
+
+<h2>Iniciar sesión</h2>
+
+<input id="emailLogin" placeholder="Correo">
+<input id="passwordLogin" type="password" placeholder="Contraseña">
+
+<button onclick="login()">Entrar</button>
+
+</div>
+
+<div id="app" style="display:none">
+
+<h2>Nueva publicación</h2>
+
+<input id="mensaje" placeholder="¿Qué necesitas o ofreces?">
+<button onclick="publicar()">Publicar</button>
+
+<h2>Publicaciones</h2>
+<div id="posts"></div>
+
+<h2>Chat</h2>
+
+<div id="chatArea" class="chat"></div>
+
+<input id="mensajeChat" placeholder="Mensaje">
+<button onclick="enviarMensaje()">Enviar</button>
+
+<br><br>
+
+<button onclick="logout()">Cerrar sesión</button>
+
+</div>
+
+</div>
+
+<script>
+
+let usuarioActual=null
+let chatUsuario=null
+
+function registrar(){
+
+let nombre=document.getElementById("nombre").value
+let barrio=document.getElementById("barrio").value
+let direccion=document.getElementById("direccion").value
+let email=document.getElementById("email").value
+let pass=document.getElementById("password").value
+
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"[]")
+
+usuarios.push({nombre,barrio,direccion,email,pass})
+
+localStorage.setItem("usuarios",JSON.stringify(usuarios))
+
+alert("Usuario creado")
+
+}
+
+function login(){
+
+let email=document.getElementById("emailLogin").value
+let pass=document.getElementById("passwordLogin").value
+
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"[]")
+
+let user=usuarios.find(u=>u.email===email && u.pass===pass)
+
+if(user){
+
+usuarioActual=user
+
+document.getElementById("login").style.display="none"
+document.getElementById("app").style.display="block"
+
+cargarPosts()
+
+}else{
+
+alert("Datos incorrectos")
+
+}
+
+}
+
+function logout(){
+
+usuarioActual=null
+
+document.getElementById("login").style.display="block"
+document.getElementById("app").style.display="none"
+
+}
+
+function publicar(){
+
+let mensaje=document.getElementById("mensaje").value
+
+let posts=JSON.parse(localStorage.getItem("posts")||"[]")
+
+posts.push({
+usuario:usuarioActual.nombre,
+mensaje
+})
+
+localStorage.setItem("posts",JSON.stringify(posts))
+
+cargarPosts()
+
+}
+
+function cargarPosts(){
+
+let posts=JSON.parse(localStorage.getItem("posts")||"[]")
+
+let area=document.getElementById("posts")
+
+area.innerHTML=""
+
+posts.forEach(p=>{
+
+area.innerHTML+=`
+<div class="post">
+
+<b>${p.usuario}</b>
+
+<p>${p.mensaje}</p>
+
+<button onclick="abrirChat('${p.usuario}')">Hablar</button>
+
+</div>
+`
+
+})
+
+}
+
+function abrirChat(usuario){
+
+chatUsuario=usuario
+
+document.getElementById("chatArea").innerHTML=
+"<b>Chat con "+usuario+"</b><br>"
+
+}
+
+function enviarMensaje(){
+
+if(!chatUsuario) return
+
+let texto=document.getElementById("mensajeChat").value
+
+let area=document.getElementById("chatArea")
+
+area.innerHTML+=usuarioActual.nombre+": "+texto+"<br>"
+
+}
+
+</script>
+
+</body>
+</html>
